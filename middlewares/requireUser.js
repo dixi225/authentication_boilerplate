@@ -1,9 +1,10 @@
-const jwt=require('jsonwebtoken')
+const jwt=require('jsonwebtoken');
+const { error } = require('../utills/responseWrapper');
 
 const requireLogin=(req,res,next)=>{
     if(!req.headers||!req.headers.authorization||req.headers.authorization.split(" ")[0]!=="Bearer")
     {
-        return res.status(401).json("Enter Bearer token in aurthorization header")
+        return  res.send(error(400, "Enter Bearer token in aurthorization header"))
     }
     const accessToken=req.headers.authorization.split(" ")[1];
     const secret=process.env.key
@@ -12,9 +13,8 @@ const requireLogin=(req,res,next)=>{
         req._id=decoded._id     
         next()
     }
-    catch (error) {
-        console.log(error);
-        return res.status(401).json("Error :- Token not valid")
+    catch (e) {
+        return res.send(error(401,"Error :- Token not valid"))
     }
 }    
 module.exports=requireLogin

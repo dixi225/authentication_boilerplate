@@ -1,10 +1,16 @@
 const User=require('../models/User')
 const bcrypt=require('bcrypt')
 const jwt=require('jsonwebtoken')
+const { error, success } = require('../utills/responseWrapper')
 
 const refreshTokenController=(req,res)=>{
-    const { refreshToken }=req.body
-    if(!refreshToken) return res.status(401).json("Refresh Token required")
+    const cookies=req.cookies
+    console.log('invoked refresh');
+    if(!cookies) return res.send(error(400,'Send cookies with refresh tokens'))
+    const refreshToken=cookies.refreshToken
+
+    if(!refreshToken) return res.send(error(400,"Refresh Token required"))
+    
     try {
         const secret=process.env.refreshKey
         const decoded=jwt.verify(refreshToken,secret)
@@ -15,9 +21,11 @@ const refreshTokenController=(req,res)=>{
             _id,
             email
         })
-        return res.status(200).json({"accessToken":accessToken})
-    } catch (error) {
-        res.status(401).json("Invalid Refresh Token")
+        
+      return res.send(success(200,{"accessToken":accessToken}))
+        }
+    catch (error) {
+        return res.send(error(401,"Invalid Refresh Token"))
     }
 }
 
@@ -25,15 +33,15 @@ const signUpController = async (req,res)=>{
 
     try{
             const {email, password}=req.body
-            if(!email||!password) return res.status(400)
+            if(!email||!password)  return res.send(error(401,"Email or Password missing"))
             const oldUser=await User.findOne({email})
-            if(oldUser) return res.status(400)
+            if(oldUser) return res.send(error(400,"User already exists"))
             const hashedPassword=await bcrypt.hash(password,10)
             const user=await User.create({
                 email,
                 password:hashedPassword
             })
-            return res.status(201).json(user)
+            return res.send(success(200,{"user":user}))
     }
     catch(err){
         console.log(err);
@@ -43,13 +51,12 @@ const signUpController = async (req,res)=>{
 const logInController= async(req,res)=>{
     
     try{
-        
         const {email, password}=req.body
-        if(!email||!password) return res.status(400)
+        if(!email||!password) return res.send(error(400,"Email or Password missing"))
         const user=await User.findOne({email})
-        if(!user) return res.status(400).json("User not found")
+        if(!user) return res.send(error(400,"User not found"))
         const match=await bcrypt.compare(password,user.password)
-        if(!match) return res.status(400).json("Invalid Password")
+        if(!match) return res.send(error(400,"Invalid Password"))
         const accessToken= generateAccessToken({
             _id:user._id,
             email:user.email,
@@ -58,11 +65,15 @@ const logInController= async(req,res)=>{
             _id:user._id,
             email:user.email,
         })        
-        return res.status(200).json({'accessToken':accessToken,
-                                    'refreshToken':refreshToken})
+        res.cookie('refreshToken',refreshToken,{
+            secure:true,
+            httpOnly:true
+        })
+       
+        return res.send(success(200,{"accessToken":accessToken}))
     }
     catch(err){
-        console.log(err);
+        return res.send(error(401,"Invalid Access Token"))
     }
 }
 
@@ -76,7 +87,7 @@ const generateRefreshToken=  (data)=>{
 
 const generateAccessToken=  (data)=>{
     const secret=process.env.key
-    const token =  jwt.sign(data,secret,{ expiresIn: '15m' })
+    const token =  jwt.sign(data,secret,{ expiresIn: '20s' })
     return token
 }
 
