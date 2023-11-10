@@ -5,10 +5,8 @@ const { error, success } = require('../utills/responseWrapper')
 
 const refreshTokenController=(req,res)=>{
     const cookies=req.cookies
-    console.log('invoked refresh');
     if(!cookies) return res.send(error(400,'Send cookies with refresh tokens'))
     const refreshToken=cookies.refreshToken
-
     if(!refreshToken) return res.send(error(400,"Refresh Token required"))
     
     try {
@@ -21,7 +19,6 @@ const refreshTokenController=(req,res)=>{
             _id,
             email
         })
-        
       return res.send(success(200,{"accessToken":accessToken}))
         }
     catch (error) {
@@ -73,6 +70,7 @@ const logInController= async(req,res)=>{
         return res.send(success(200,{"accessToken":accessToken}))
     }
     catch(err){
+        console.log(`error at login ${err}`);
         return res.send(error(401,"Invalid Access Token"))
     }
 }
@@ -87,7 +85,7 @@ const generateRefreshToken=  (data)=>{
 
 const generateAccessToken=  (data)=>{
     const secret=process.env.key
-    const token =  jwt.sign(data,secret,{ expiresIn: '20s' })
+    const token =  jwt.sign(data,secret,{ expiresIn: '15m' })
     return token
 }
 

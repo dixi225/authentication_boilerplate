@@ -4,7 +4,7 @@ const { error } = require('../utills/responseWrapper');
 const requireLogin=(req,res,next)=>{
     if(!req.headers||!req.headers.authorization||req.headers.authorization.split(" ")[0]!=="Bearer")
     {
-        return  res.send(error(400, "Enter Bearer token in aurthorization header"))
+        return res.send(error(400, "Enter Bearer token in aurthorization header"))
     }
     const accessToken=req.headers.authorization.split(" ")[1];
     const secret=process.env.key

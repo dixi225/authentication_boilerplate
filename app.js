@@ -2,7 +2,7 @@ const  express=require('express')
 const app=express()
 const helmet=require('helmet')
 const authRouter=require('./routers/authRouter')
-const pathRouter =require('./routers/pathRouter')
+const postRouter =require('./routers/postRouter')
 const cookieParser=require('cookie-parser')
 const cors=require('cors')
 
@@ -16,7 +16,7 @@ app.use(cors({
     origin:'http://localhost:5173'
 }))
 app.use('/auth',authRouter)   
-app.use('/posts',pathRouter)
+app.use('/posts',postRouter)
 
 
 module.exports=app

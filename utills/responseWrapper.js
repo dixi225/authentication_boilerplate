@@ -1,6 +1,6 @@
 const success=(statusCode,messege)=>{
     return{
-        staus:'ok',
+        status:'ok',
         statusCode:statusCode,
         messege:messege
     }

@@ -3,5 +3,5 @@ const {signUpController,logInController,refreshTokenController} =require('../con
 
 router.post('/signup',signUpController)
 router.post('/login',logInController)
-router.post('/refresh',refreshTokenController)
+router.get('/refresh',refreshTokenController)
 module.exports=router
