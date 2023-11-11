@@ -12,7 +12,6 @@ const refreshTokenController=(req,res)=>{
     try {
         const secret=process.env.refreshKey
         const decoded=jwt.verify(refreshToken,secret)
-        console.log(decoded);
         const _id=decoded._id
         const email=decoded.email
         const accessToken=generateAccessToken({
@@ -21,7 +20,8 @@ const refreshTokenController=(req,res)=>{
         })
       return res.send(success(200,{"accessToken":accessToken}))
         }
-    catch (error) {
+    catch (e) {
+        console.log(e);
         return res.send(error(401,"Invalid Refresh Token"))
     }
 }
@@ -29,8 +29,9 @@ const refreshTokenController=(req,res)=>{
 const signUpController = async (req,res)=>{
 
     try{
+            console.log(req.body);
             const {email, password}=req.body
-            if(!email||!password)  return res.send(error(401,"Email or Password missing"))
+            if(!email||!password)  return res.send(error(400,"Email or Password missing"))
             const oldUser=await User.findOne({email})
             if(oldUser) return res.send(error(400,"User already exists"))
             const hashedPassword=await bcrypt.hash(password,10)
@@ -42,6 +43,7 @@ const signUpController = async (req,res)=>{
     }
     catch(err){
         console.log(err);
+        return res.send(error(401,'anonymous error'))
     }
 }
 
@@ -61,12 +63,12 @@ const logInController= async(req,res)=>{
         const refreshToken= generateRefreshToken({
             _id:user._id,
             email:user.email,
-        })        
+        })  
         res.cookie('refreshToken',refreshToken,{
             secure:true,
             httpOnly:true
         })
-       
+        console.log('login success');
         return res.send(success(200,{"accessToken":accessToken}))
     }
     catch(err){
@@ -85,7 +87,7 @@ const generateRefreshToken=  (data)=>{
 
 const generateAccessToken=  (data)=>{
     const secret=process.env.key
-    const token =  jwt.sign(data,secret,{ expiresIn: '15m' })
+    const token =  jwt.sign(data,secret,{ expiresIn: '12s' })
     return token
 }
 
