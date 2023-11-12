@@ -29,17 +29,18 @@ const refreshTokenController=(req,res)=>{
 const signUpController = async (req,res)=>{
 
     try{
-            console.log(req.body);
-            const {email, password}=req.body
-            if(!email||!password)  return res.send(error(400,"Email or Password missing"))
+            const {email, password,name}=req.body
+            if(!email||!password||!name)  return res.send(error(400,"Email or Password missing"))
             const oldUser=await User.findOne({email})
             if(oldUser) return res.send(error(400,"User already exists"))
             const hashedPassword=await bcrypt.hash(password,10)
             const user=await User.create({
+                name,
                 email,
-                password:hashedPassword
+                password:hashedPassword 
             })
-            return res.send(success(200,{"user":user}))
+            const returnUser=await User.findById(user._id)
+            return res.send(success(200,{"user":returnUser}))
     }
     catch(err){
         console.log(err);
@@ -52,11 +53,11 @@ const logInController= async(req,res)=>{
     try{
         const {email, password}=req.body
         if(!email||!password) return res.send(error(400,"Email or Password missing"))
-        const user=await User.findOne({email})
+        const user=await User.findOne({email}).select('+password')
         if(!user) return res.send(error(400,"User not found"))
         const match=await bcrypt.compare(password,user.password)
         if(!match) return res.send(error(400,"Invalid Password"))
-        const accessToken= generateAccessToken({
+        const accessToken= generateAccessToken({    
             _id:user._id,
             email:user.email,
         })
@@ -68,7 +69,6 @@ const logInController= async(req,res)=>{
             secure:true,
             httpOnly:true
         })
-        console.log('login success');
         return res.send(success(200,{"accessToken":accessToken}))
     }
     catch(err){
@@ -87,7 +87,7 @@ const generateRefreshToken=  (data)=>{
 
 const generateAccessToken=  (data)=>{
     const secret=process.env.key
-    const token =  jwt.sign(data,secret,{ expiresIn: '12s' })
+    const token =  jwt.sign(data,secret,{ expiresIn: '15m' })
     return token
 }
 

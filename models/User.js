@@ -9,8 +9,31 @@ const userSchema=mongoose.Schema({
     },
     password:{
         type:String,
+        required:true,
+        select:false
+    },
+    name:{
+        type:String,
         required:true
-    }
+    },
+    avatar:{
+        publicId: String,
+        URL: String
+    },
+    followers:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
+    }],
+    followings:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
+    }],
+    posts:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'post'
+        }
+    ]
 })
 
 module.exports=mongoose.model('user',userSchema)

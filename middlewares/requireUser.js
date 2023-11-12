@@ -14,6 +14,7 @@ const requireLogin=(req,res,next)=>{
         next()
     }
     catch (e) {
+        console.log(e);
         return res.send(error(401,"Error :- Token not valid"))
     }
 }    
